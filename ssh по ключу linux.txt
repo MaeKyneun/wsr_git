@@ -1,0 +1,30 @@
+------------c1-manager-------------------
+apt install -y openssh*
+
+ssh-keygen
+
+ssh-copy-id -i /root/.ssh/id_rsa.pub 192.168.133.100
+
+scp -p /root/.ssh/known_hosts 192.168.133.100:/root/.ssh/ 
+
+
+ssh-copy-id -i /root/.ssh/id_rsa.pub 192.168.133.10
+
+scp -p /root/.ssh/known_hosts 192.168.133.10:/root/.ssh/ 
+
+
+/etc/ssh/sshd_config
+UseDNS no
+[...]ip
+GSSAPIAuthentication no
+[...]
+------------c1-srv and c1-cli-------------------
+apt install -y openssh*
+
+
+
+echo PermitRootLogin yes >> /etc/ssh/sshd_config
+echo AllowUsers root user >> /etc/ssh/sshd_config
+
+systemctl restart sshd
+systemctl enable sshd
