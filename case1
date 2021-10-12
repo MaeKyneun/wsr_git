@@ -1,0 +1,33 @@
+##########################c1-srv#####################################
+- name: case1-srv
+  hosts: 192.168.133.10
+
+  tasks:
+  - name: install nfs
+    apt: pkg=nfs-server state=present update_cache=true
+
+  - name: /opt/nfs
+    command: mkdir /opt/nfs
+
+  - name: auto mount
+    lineinfile: dest=/etc/exports
+                regexp=''
+                insetafter=EOF
+                line='/opt/ 192.168.133.0/24(rw)\n/opt/nfs 192.168.133.0/24(rw)'
+
+  - name: restart nfs
+    command: systemctl restart nfs-server
+
+##########################c1-cli#####################################
+- name: case1-cli
+  hosts: 192.168.133.100
+
+  tasks:
+  - name: install nfs
+    apt: pkg=nfs-common state=present update_cache=true
+
+  - name: new folder
+    command: mkdir /opt/remote
+
+  - name: mount /opt/nfs
+    command: mount -t nfs 192.168.133.10:/opt/nfs /opt/remote
