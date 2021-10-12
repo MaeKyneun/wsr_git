@@ -1,0 +1,30 @@
+apt -y install python3-pip
+pip3 install 'cryptography<3.4'
+pip3 install 'ansible>=2.8.0,<2.10.0'
+pip3 install 'Jinja2>=2.10.0'
+
+apt install ansible
+
+******************ansible**********************
+
+kdir /etc/ansible
+anasible case1 -i /etc/ans*/hosts* -m ping
+ansible -m command -a "команда, что делать" <ip address> -i <файл инвентаризации>
+
+*****************inventory file****************
+[case1]
+c1-srv 192.168.133.10
+c1-cli 92.168.133.100
+
+[l2-front]
+192.168.133.133
+192.168.133.201
+
+[c2-back]
+192.168.133.202
+192.168.133.203
+192.168.133.204
+
+[case2:children]
+c2-front
+c2-back
