@@ -1,0 +1,128 @@
+#######################c2-front###################################
+- name: case2-front
+  hosts: c2-front
+
+  tasks:
+  - name: stop firewall
+    command: systemctl stop apparmor.service
+    command: systemctl disable apparmor.service
+
+  - name: /etc/hosts
+    lineinfile: dest=/etc/hosts
+                regexp=''
+                insertafter=OEF
+                line='192.168.133.202 case2.site www.case2.site\n192.168.133.203 case2.site www.case2.site\n192.168.133.204 case2.site www.case2.site'
+
+  - name: install nginx
+    apt: pkg=nginx state=present update_cache=true
+  - name: install ufw
+    apt: pkg=ufw state=present update_cache=true
+
+  - name: copy nginx.conf
+    copy:
+      src: /etc/nginx/conf.d/nginx.conf
+      dest: /etc/nginx/conf.d/nginx.conf
+  - name: copy certificate
+    copy:
+      src: /etc/nginx/conf.d/server.crt
+      dest: /etc/nginx/conf.d/server.crt
+  - name: copy key
+    copy:
+      src: /etc/nginx/conf.d/server.key
+      dest: /etc/nginx/conf.d/server.key
+
+  - name: restart nginx
+    command: systemctl restart nginx
+    command: systemctl enable nginx
+
+  - name: ufw enable
+    ufw:
+      state: enabled
+      policy: deny
+  - name: ufw allow ssh
+    ufw:
+      rule: allow
+      name: ssh
+  - name: ufw allow port443
+    ufw:
+      rule: allow
+      port: 443
+  - name: ufw allow port 80
+    ufw:
+      rule: allow
+      port: 80
+#######################c2-back####################################
+- name: case2-back
+  hosts: c2-back
+
+  tasks:
+  - name: stop firewall
+    command: systemctl stop apparmor.service
+    command: systemctl disable apparmor.service
+
+  - name: install httpd
+    apt: pkg=httpd* state=present update_cache=true
+  - name: install apache2
+    apt: pkg=apache2* state=present update_cache=true
+
+  - name: copy indexx.html
+    copy:
+      src: /var/www/html/index.html
+      dest: /var/www/html/index.html
+
+  - name: restart apache2
+    command: systemctl restart apache2
+    command: systemctl enable apache2
+
+  - name: ufw enable
+    ufw:
+      state: enabled
+      policy: deny
+  - name: ufw allow ssh
+    ufw:
+      rule: allow
+      name: ssh
+
+  - name: ufw allow port 80
+    ufw:
+      rule: allow
+      port: 80
+#######################c2-back-1##################################
+- name: case2-back-1
+  hosts: 192.168.133.202
+
+  tasks:
+  - name: server name
+    lineinfile: dest=/var/www/html/index.html
+                regexp=''
+                insertafter=OEF
+                line='Server_name c2-back-1'
+  - name: restart apache2
+    command: systemctl restart apache2
+    
+#######################c2-back-2##################################
+- name: case2-back-2
+  hosts: 192.168.133.203
+
+  tasks:
+  - name: server name
+    lineinfile: dest=/var/www/html/index.html
+                regexp=''
+                insertafter=OEF
+                line='Server_name c2-back-2'
+  - name: restart apache2
+    command: systemctl restart apache2
+    
+#######################c2-back-3##################################
+- name: case2-back-3
+  hosts: 192.168.133.204
+
+  tasks:
+  - name: server name
+    lineinfile: dest=/var/www/html/index.html
+                regexp=''
+                insertafter=OEF
+                line='Server_name c2-back-3'
+  - name: restart apache2
+    command: systemctl restart apache2
+    
