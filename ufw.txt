@@ -1,0 +1,29 @@
+unf (firewall)
+
+
+systemctl stop apparmor
+systemctl disable apparmor
+
+apt install -y ufw
+
+<включить>
+ufw enable
+
+<проверить статус, что он работает>
+ufw status
+
+<запрещает все входящие подключения>
+sudo ufw default deny incoming  
+
+<разрешает все исходящие подключения>
+sudo ufw default allow outgoing  
+
+<перезапустить службу>
+ufw reload
+
+<разрешить ssh и nfsv4>
+ufw allow ssh
+ufw allow from 192.168.133.0 to any port nfs
+
+
+ufw reload
