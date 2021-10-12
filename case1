@@ -3,8 +3,14 @@
   hosts: 192.168.133.10
 
   tasks:
+  - name: stop firewall
+    command: systemctl stop apparmor.service
+    command: systemctl disable apparmor.service
+
   - name: install nfs
     apt: pkg=nfs-server state=present update_cache=true
+ - name: install ufw
+    apt: pkg=ufw state=present update_cache=true
 
   - name: /opt/nfs
     command: mkdir /opt/nfs
@@ -18,11 +24,27 @@
   - name: restart nfs
     command: systemctl restart nfs-server
 
+  - name: ufw enable
+    ufw:
+      state: enabled
+      policy: deny
+  - name: ufw allow ssh
+    ufw:
+      rule: allow
+      name: ssh
+  - name: ufw allow nfsv4
+    ufw:
+      rule: allow
+      name: nfs     
 ##########################c1-cli#####################################
 - name: case1-cli
   hosts: 192.168.133.100
 
   tasks:
+  - name: stop firewall
+    command: systemctl stop apparmor.service
+    command: systemctl disable apparmor.service
+
   - name: install nfs
     apt: pkg=nfs-common state=present update_cache=true
 
