@@ -1,0 +1,25 @@
+apt install -y lvm2
+
+добавить диски или посмотреть располложение существующих (lsblk)
+
+*****************************инициализация физических lvm разделов*
+pvcreate /dev/sdb /dev/sdc 
+pvscan 					   *посмотреть созданные физ. тома*
+pvdisplay                              - более подробная информация
+
+******************************созданные группы разделов*
+sudo vgcreate vol_grp1 <name groupe> /dev/sda6 /dev/sda7 
+vgdisplay 							   - информация
+
+*****************************Создание логических томов*
+lvcreate -l 20 -n logical_vol1<name volume> vol_grp1 - создание раздера размером 20 блоков LVM
+lvcreate -L 80M -n logical_vol1<name volume> vol_grp1 - создание тома размером 80МегаБайт
+
+lvdisplay                              - информация (смотрим расположение)
+mkfs.ext4 /dev/vol_grp1/logical_vol1  (меняем файловую систему на mkfs.ext4)
+mount /dev/vol_grp1/logical_vol1 /mnt/ - монтируем
+
+lvremove <расположение> 			   - удаление разделов
+
+Источник:
+https://losst.ru/sozdanie-i-nastrojka-lvm-linux
