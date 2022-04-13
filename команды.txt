@@ -1,0 +1,132 @@
+ALL:
+echo net.ipv4.ip_forward=1 >> /etc/sysctl.conf
+
+RTR-ALL:
+apt install -y net-tools
+
+mount /dev/sr1 /media/cdrom
+cd /media/cdrom
+dpkg -i netfilter-*
+dpkg -i iptables-*
+
+iptables -A POSTROUTING -t nat -o ens33(интерфейс в ISP) -j MASQUERADE
+iptables-save > /etc/iptables/rules.v4
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A INPUT -p udp --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p gre -j ACCEPT
+iptables -A INPUT -p udp --dport 22
+iptables -A INPUT -i ens33 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+iptables -P INPUT DROP
+#iptables -P OUTPUT ACCEPT#
+
+ISP iptables:
+iptables -t nat -A PREROUTING --dst 3.3.3.1 -p tcp --dport 8080 -j DNAT --to-destination 4.4.4.100
+iptables -t nat -A PREROUTING --dst 3.3.3.1 -p tcp --dport 8080 -j DNAT --to-destination 5.5.5.100
+
+*RTR-L:
+route add -net 192.168.100.0/24 gw 10.5.5.1
+iptables -A INPUT -p tcp -j ACCEPT
+iptables -A PREROUTING -t nat -i ens33 -p ssh --dport 2222 -j DNAT --to 192.168.100.100
+iptables -A PREROUTING -t nat -i ens33 -p ssh --dport 2244 -j DNAT --to 172.17.100.100
+
+iptables -t nat -A PREROUTING --dst 4.4.4.100 -p tcp --dport 8080 -j DNAT --to-destination 192.168.100.100
+iptables -I FORWARD 1 -i ens33 -o ens34 -d 192.168.100.100 -p tcp -m tcp --dport 8080 -j ACCEPT
+
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 53 -j DNAT --to 192.168.100.200:53
+
+*RTR-R:
+route add -net 172.16.100.0/24 gw 10.5.5.2
+iptables -t nat -A PREROUTING --dst 5.5.5.100 -p tcp --dport 8080 -j DNAT --to-destination 172.16.100.100
+iptables -I FORWARD 1 -i ens33 -o ens34 -d 172.16.100.100 -p tcp -m tcp --dport 8080 -j ACCEPT
+
+SRV:
+SAMBA(https://interface31.ru/tech_it/2019/06/nastroyka-faylovogo-servera-samba-na-platforme-debian-ubuntu.html)
+apt install samba cifs-utils
+vim /etc/samba/smp.conf 
+	"[global]
+	interfaces = ens34 gre1 (or 192.168.100.0/24 172.16.100.0/24)
+	big interfaces only = yes
+	log level = 1
+	#syslog = 0
+	server role = standalone server
+	map to guest - bad user
+	min = SMB2
+	client max protocol = SMB3
+	"
+testparm (or service smbd restart)
+vim /etc/samba/smp.conf 
+	"[public]
+	comment = Shared for all
+	path = /mnt/storage
+	read only = no
+	guest ok = yes
+	writable = yes
+	public = yes
+	"
+mkdir /mnt/storage
+chmod 777 /mnt/storage
+
+RAID1 (https://losst.ru/programmnyj-raid-v-linux)
+apt install -y mdadm
+lsblk (посмотреть диски)
+fdisk /dev/sdb (n p 1 w)
+fdisk /dev/sdc (n p 1 w)
+
+mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc
+cat /proc/mdstat
+lsblk
+
+mkfs.ext4 /dev/md0
+mount /dev/md0 /mnt/storage
+
+blkid >> /etc/fstab (ext4 default 0 0)
+
+vim /etc/samba/smb.conf
+
+[storage]
+comment = My folder
+brouwseable = no
+path = /mnt/storage
+writable = yes
+public = yes
+guest ok = yes
+read only = no
+
+SRV - openssl:
+/var/ca 
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/conf.d/server.key –out /etc/nginx/conf.d/server.crt
+-RU
+-DEMO.WSR
+-DEMO CA
+
+WEB-all:
+SAMBA
+apt install cifs-utils
+mkdir /opt/share
+vim /root/.smbclient
+username = root
+password = toor
+
+/etc/fstab
+//srv.int.demo.wsr/storage /opt/share cifs user,rw,_netdev,credentials=/root/.smbclient 0 0
+
+DOCKER 
+добавить диск DOCKER.iso
+смонтировать его в /media/cdrom 
+mount /dev/sr0 /demia/cdrom
+cd /media/cdrom/docker
+dpkg -i *
+cd /media/cdrom
+cp docker-compose /usr/local/bin
+chmod +x /usr/local/bin/docker-compose
+cp appdockrdemo.tar.gz /tmp/
+cd /tmp
+tar -xvf appdockerdemo.tar.gz
+docker image load -i appdocker0.zip
+docker images
+
+docker run --name demo -p 8080:5000 -d  appdocker0:latest
