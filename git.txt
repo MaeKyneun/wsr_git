@@ -11,5 +11,31 @@ git --list
 ssh-keygen -t rsa -C "Kyneun@yandex.ru"
 cat ~/.ssh/id_rsa.pub
 
+далее подключаемся через Putty и копирем ключ на github > settings > ssh and gpg keys
+создаем репозиторий на сайте, заходим в нее смотрим команды...
+напимер:
+echo "# Linux_test" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+branch -M main
+git remote add origin git@github.com:MaeKyneun/Linux_test.git
+git push -u origin main
+
+переходим обратно на ВМ
+и производим эти команды, проверяем, что на сайте появился README файл...
+
+далее повторяются действия 
+1. создать файл
+touch test.txt
+git add test.txt (или * если файлов много)
+
+2. сделать комит
+git commit -m 'название'
+
+3. запушить
+git push -u origin main
+
+4. проверить на сайте, что файлы дошли
 
 
