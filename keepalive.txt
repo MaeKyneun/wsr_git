@@ -1,0 +1,58 @@
+настройка высокой доступности и ip плавающих адресов
+
+*********************server 1*********************
+apt install -y keepalive
+vim /etc/keepalived/keepalived.conf
+------------------------------
+vrrp_instance proxy_ip1 { *секция, определяющая экземпляр VRRP*
+	state MASTER 		  *начальное состояние при запуске*
+	interface ens33 	  *интерфейс, на котором юудет работать VRRP*
+	virtual_router_id 1   *уникальный индентификатор, должен совпадать на всех серверах*
+	priority 255 		  *чем выше, тем быстрее сервер станет MASTER*
+	virtual_ipaddress {   *должны совпадать на всем серверах внутри экземпляра*
+		192.168.2.101/24 des ens33 label ens33:1
+	}
+}
+
+vrrp_instance proxy_ip2 {
+	state BACKUP
+	interface ens33
+	virtual_router_id 2
+	priority 100
+	virtual_ipaddress {
+		192.168.2.102/24 des ens33 label ens33:2
+	}
+}
+------------------------------
+systmctl restart keepalive *перезагруска, если не помагает reebot всей машины*
+ip a show ens33 *должно быть 2 адреса, физический и виртуальный*
+
+
+*********************server 2*********************
+apt install -y keepalive
+------------------------------
+vrrp_instance proxy_ip1 {
+	state BACKUP
+	interface ens33
+	virtual_router_id 1
+	priority 100
+	virtual_ipaddress {
+		192.168.2.101/24 des ens33 label ens33:1
+	}
+}
+
+vrrp_instance proxy_ip2 {
+	state MASTER
+	interface ens33
+	virtual_router_id 2
+	priority 255
+	virtual_ipaddress {
+		192.168.2.102/24 des ens33 label ens33:2
+	}
+}
+------------------------------
+systemctl restart keepalive
+ip a show ens33 
+
+Источник:
+https://winitpro.ru/index.php/2019/09/09/keepalived-ha-balansirovka-plavayushhiy-ip-adres/
