@@ -1,0 +1,15 @@
+новый вариант docker в demo2022
+
+
+
+mount /dev/dr1 /media/cdrom
+
+cd /media/cdrom
+dpkg -i * 
+cp app* /tmp
+
+cd /tmp
+docker image load -i appdocker0.zip
+docker images
+
+docker run --name demo -p 8080:5000 -d  appdocker0:latest
