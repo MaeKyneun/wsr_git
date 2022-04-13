@@ -1,0 +1,63 @@
+**************************************server ntp linux
+apt install chrony
+
+
+systemctl start chrony
+systemctl status chrony
+
+/etc/ch*/ch*.conf 
+allow <ip address FW>
+**************************************client ntp linux
+apt install chrony -y
+
+
+systemctl start chrony
+systemctl status chrony
+
+apt install -y firewalld
+firewall-cmd --permanent --add-service=ntp
+firewall-cmd --reload
+
+/etc/ch*/ch*.conf
+server <ip address DC>
+
+проверить адрес сервера и, что там все не по 0 -  chronyc tracking
+
+**************************************client ntp windows
+w32tm /config /syncfromflags:manual /manualpeerlist:"<ip address ISP - на DC>"
+w32tm /config /syncfromflags:manual /manualpeerlist:"<ip address DC - на всех ВМ>"
+net stop & start w32tm
+w32tm /config /update
+w32tm /query /source
+
+
+
+
+apt install -y frr*
+
+
+sed -i.bak 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+
+
+systemctl restart frr
+systemctl enable frr
+
+vtysh
+conf t
+ip for
+router ospf
+network 10.10.10.0/30 area 0
+network 10.0.0.0/30 area 0
+ex
+ex
+wr
+ex
+
+
+
+
+
+*******************************/AdminShare
+apt install -y samba-client cifs-utils
+mkdir /mnt/adminshare
+mount -t cifs -o username=Administrator,password=P@ssw0rd //192.168.30.10/AdminShare /mnt/adminshare
