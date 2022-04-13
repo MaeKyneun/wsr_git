@@ -1,0 +1,15 @@
+с условием, что ВМ к ПК подключена через bridged (ping в обе стороны, подключение с ПК на ВМ по SSH через Putty или Teraterm)
+
+git --config user.name "Mae Kyneun"
+git --config user.email "Kyneun@yandex.ru"
+
+git --config core.editor vim
+git --config merge.tool vimdiff
+
+git --list
+
+ssh-keygen -t rsa -C "Kyneun@yandex.ru"
+cat ~/.ssh/id_rsa.pub
+
+
+
