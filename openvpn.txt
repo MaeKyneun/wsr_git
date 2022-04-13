@@ -1,0 +1,4 @@
+https://firstvds.ru/technology/ustanovka-openvpn
+openvpn --daemon --config /etc/openvpn/openvpn.conf
+
+ospf в сеть DC
