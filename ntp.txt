@@ -1,0 +1,36 @@
+**************************************ISP ntp linux
+apt install chrony
+
+
+systemctl start chrony
+systemctl status chrony
+
+/etc/ch*/ch*.conf 
+local stratum 4
+allow 4.4.4.0/24
+allow 3.3.3.0/24
+**************************************SRV ntp linux
+apt install chrony
+
+
+systemctl start chrony
+systemctl status chrony
+
+/etc/ch*/ch*.conf 
+pool isp.demo.wsr iburst
+
+allow 192.168.100.0/24
+allow 172.16.100.0/24
+**************************************all (in SRV) ntp linux
+apt install chrony -y
+
+
+systemctl start chrony
+systemctl status chrony
+
+/etc/ch*/ch*.conf
+pool srv.int.demo.wsr iburst
+
+allow 192.168.100.0/24
+
+проверить адрес сервера и, что там все не по 0 -  chronyc tracking
